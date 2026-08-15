@@ -15,8 +15,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Prevents scrollbars */
-            touch-action: none; /* Prevents zooming/scrolling on mobile tap */
+            overflow: hidden; 
+            touch-action: none; 
         }
 
         /* Card Container */
@@ -54,7 +54,7 @@
             border-radius: 30px;
             cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
-            -webkit-tap-highlight-color: transparent; /* Removes blue flash on mobile tap */
+            -webkit-tap-highlight-color: transparent; 
         }
 
         /* Yes Button */
@@ -100,7 +100,7 @@
             <button id="yesBtn" class="btn yes">Yes</button>
             <button id="noBtn" class="btn no">No</button>
         </div>
-        <div id="bingMsg">BING! See you on the pitch! 🎉</div>
+        <div id="bingMsg">YAY! tell me when you're going 🎉</div>
     </div>
 
     <script>
@@ -112,7 +112,7 @@
 
         // Function to teleport the button
         function moveNoButton() {
-            if (isCaptured) return; // Stop moving if she beat the system
+            if (isCaptured) return; 
             
             noBtn.style.position = 'fixed';
             
@@ -132,14 +132,13 @@
 
         // 2. Move away instantly if a finger touches it
         noBtn.addEventListener('touchstart', (e) => {
-            // We don't use e.preventDefault() here so the tap CAN register if she's inhumanly fast
             moveNoButton();
         });
 
         // 3. Move on hover for desktop fallback
         noBtn.addEventListener('mouseover', moveNoButton);
 
-        // THE BING FUNCTION (Winning state)
+        // THE WINNING FUNCTION
         function triggerVictory(buttonToLock) {
             bingMsg.style.display = 'block';
             
