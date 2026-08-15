@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Soccer Time?</title>
     <style>
         /* Base Styling */
@@ -15,23 +15,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Prevents scrollbars when the button runs away */
+            overflow: hidden; /* Prevents scrollbars */
+            touch-action: none; /* Prevents zooming/scrolling on mobile tap */
         }
 
         /* Card Container */
         .card {
             background: white;
-            padding: 40px;
+            padding: 40px 20px;
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             text-align: center;
+            width: 85%;
             max-width: 400px;
             z-index: 10;
         }
 
         h1 {
             color: #333;
-            font-size: 24px;
+            font-size: 22px;
             margin-bottom: 30px;
         }
 
@@ -39,8 +41,8 @@
         .buttons {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            min-height: 60px; /* Prevents layout shift when No button escapes */
+            gap: 15px;
+            min-height: 60px;
         }
 
         /* General Button Styles */
@@ -51,23 +53,19 @@
             border: none;
             border-radius: 30px;
             cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* Removes blue flash on mobile tap */
         }
 
-        /* Yes Button - Very Pressable */
+        /* Yes Button */
         .yes {
             background: linear-gradient(45deg, #11998e, #38ef7d);
             color: white;
             box-shadow: 0 8px 15px rgba(56, 239, 125, 0.4);
         }
 
-        .yes:hover {
-            transform: translateY(-3px) scale(1.05);
-            box-shadow: 0 12px 20px rgba(56, 239, 125, 0.6);
-        }
-
         .yes:active {
-            transform: translateY(1px);
+            transform: translateY(2px) scale(0.95);
         }
 
         /* No Button */
@@ -75,15 +73,14 @@
             background: #ff4b2b;
             color: white;
             box-shadow: 0 8px 15px rgba(255, 75, 43, 0.3);
-            /* Transition makes it slide quickly instead of teleporting instantly */
-            transition: all 0.15s ease-out; 
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); 
         }
 
         /* Success Message */
         #bingMsg {
             display: none;
             margin-top: 25px;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             color: #11998e;
             animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -110,44 +107,69 @@
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         const bingMsg = document.getElementById('bingMsg');
+        
+        let isCaptured = false;
 
-        // Make the "No" button run away on hover
-        noBtn.addEventListener('mouseover', () => {
-            // Switch to fixed positioning so it can move anywhere on the screen
+        // Function to teleport the button
+        function moveNoButton() {
+            if (isCaptured) return; // Stop moving if she beat the system
+            
             noBtn.style.position = 'fixed';
             
-            // Calculate random coordinates within the window boundaries
-            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth - 20);
-            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight - 20);
+            // Keep it within the screen bounds safely
+            const safeX = window.innerWidth - noBtn.offsetWidth - 20;
+            const safeY = window.innerHeight - noBtn.offsetHeight - 20;
             
-            // Apply the new coordinates
+            const x = Math.max(10, Math.random() * safeX);
+            const y = Math.max(10, Math.random() * safeY);
+            
             noBtn.style.left = `${x}px`;
             noBtn.style.top = `${y}px`;
+        }
+
+        // 1. Move randomly on a timer (makes it hard for mobile users to predict)
+        setInterval(moveNoButton, 900);
+
+        // 2. Move away instantly if a finger touches it
+        noBtn.addEventListener('touchstart', (e) => {
+            // We don't use e.preventDefault() here so the tap CAN register if she's inhumanly fast
+            moveNoButton();
         });
 
-        // Just in case they manage to click it while it's moving
-        noBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-        });
+        // 3. Move on hover for desktop fallback
+        noBtn.addEventListener('mouseover', moveNoButton);
 
-        // The "Yes" button interaction
-        yesBtn.addEventListener('click', () => {
-            // Show the text
+        // THE BING FUNCTION (Winning state)
+        function triggerVictory(buttonToLock) {
             bingMsg.style.display = 'block';
             
-            // Make the button look locked in
-            yesBtn.style.transform = 'scale(1.1)';
-            yesBtn.style.boxShadow = '0 0 30px rgba(56, 239, 125, 0.8)';
+            buttonToLock.style.transform = 'scale(1.1)';
+            buttonToLock.style.boxShadow = '0 0 30px rgba(56, 239, 125, 0.8)';
             
-            // Play a "Bing" sound
-            // (Note: Browsers require user interaction before playing audio, which the click provides)
+            // Audio ping
             const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-09.mp3');
-            audio.play().catch(error => {
-                console.log("Audio playback was blocked, but the visual bing worked!");
-            });
+            audio.play().catch(() => console.log("Audio played visually!"));
+        }
+
+        // Standard Yes Click
+        yesBtn.addEventListener('click', () => {
+            triggerVictory(yesBtn);
+            noBtn.style.display = 'none'; // Hide the no button
+        });
+
+        // IF SHE SOMEHOW CLICKS THE NO BUTTON
+        noBtn.addEventListener('click', () => {
+            isCaptured = true; // Stops the random timer movement
             
-            // Hide the No button entirely since they made the right choice
-            noBtn.style.display = 'none';
+            // Transform the "No" button into a "Yes" button
+            noBtn.innerText = 'Yes';
+            noBtn.className = 'btn yes'; // Swaps the red for green styling
+            
+            // Trigger the win using the newly converted button
+            triggerVictory(noBtn);
+            
+            // Hide the original yes button so there's only one big "Yes" on screen
+            yesBtn.style.display = 'none';
         });
     </script>
 
