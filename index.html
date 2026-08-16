@@ -127,15 +127,10 @@
             noBtn.style.top = `${y}px`;
         }
 
-        // 1. Move randomly on a timer (makes it hard for mobile users to predict)
-        setInterval(moveNoButton, 900);
+        // 1. Move randomly on a timer (slightly faster to make up for removing the touch runaway)
+        let moveTimer = setInterval(moveNoButton, 700);
 
-        // 2. Move away instantly if a finger touches it
-        noBtn.addEventListener('touchstart', (e) => {
-            moveNoButton();
-        });
-
-        // 3. Move on hover for desktop fallback
+        // 2. Move on hover for desktop fallback
         noBtn.addEventListener('mouseover', moveNoButton);
 
         // THE WINNING FUNCTION
@@ -154,11 +149,16 @@
         yesBtn.addEventListener('click', () => {
             triggerVictory(yesBtn);
             noBtn.style.display = 'none'; // Hide the no button
+            clearInterval(moveTimer); // Stop the no button from moving in the background
         });
 
-        // IF SHE SOMEHOW CLICKS THE NO BUTTON
+        // FIXED: IF SHE SOMEHOW CATCHES THE NO BUTTON
         noBtn.addEventListener('click', () => {
-            isCaptured = true; // Stops the random timer movement
+            isCaptured = true; // Stops the logic
+            clearInterval(moveTimer); // Stops the timer movement entirely
+            
+            // Snap the button back to its normal position next to the other one
+            noBtn.style.position = 'static'; 
             
             // Transform the "No" button into a "Yes" button
             noBtn.innerText = 'Yes';
